@@ -184,7 +184,7 @@ class VMDWrap:
 			if not pipe:
 				text = '\n'.join(self.script)
 				proc = subprocess.Popen('vmd -dispdev text',stdin=subprocess.PIPE,
-					shell=True,executable='/bin/bash',stdout=sys.stdout,stderr=sys.stdout,
+					shell=True,stdout=sys.stdout,stderr=sys.stdout,
 					cwd=self.cwd)
 				proc.communicate(input=str(text).encode())
 			else:
@@ -229,10 +229,18 @@ class VMDWrap:
 		#---snapshot is the cheap/fast method otherwise we render
 		self.snapshot = snapshot
 		if not self.snapshot:
+			#---get the generic path for tachyon
+			video_lines.extend([
+				"set archexe \"\"",
+				"switch [vmdinfo arch] {",
+				"	WIN64 -","	WIN32 { set archexe \".exe\" }",
+				"}","package require exectool 1.2","set tachyonexe [format \"tachyon%s\" $archexe];",
+				"set tachyoncmd [::ExecTool::find -interactive -description \"Tachyon Ray Tracer\" "+
+				"-path [file join $env(VMDDIR) \"tachyon_[vmdinfo arch]$archexe\"] $tachyonexe]"])
 			video_lines.extend([
 				'set filename '+dropspot+'snap.[format "%04d" $i]',
 				'render TachyonInternal $filename.tga' if False else
-				'render Tachyon $filename "/usr/local/lib/vmd/tachyon_LINUXAMD64" '+\
+				'render Tachyon $filename $tachyoncmd '+\
 				'-aasamples 12 %s -format TARGA -o %s.tga -res '+'%d %d'%self.res,
 				'exec convert $filename.tga $filename.png',
 				'exec rm $filename.tga $filename',
@@ -248,7 +256,7 @@ class VMDWrap:
 		if not pause: self.script.append('source %sscript-video.tcl'%os.path.join(cwd,''))
 		return self.video_dn
 
-	def render(self,name='video',rate=1.0,codec=None,size=50.0,duration=0.0):
+	def render(self,name='video',rate=1.0,codec=None,size=50.0,duration=0.0,webm=False):
 		"""
 		Render a video from snapshots.
 		"""
@@ -328,6 +336,10 @@ class VMDWrap:
 		if command_key==('ffmpeg','tachyon','2pass'):
 			print('[NOTE] cleaning up ffmpeg2pass files')
 			for fn in glob.glob(self.cwd+'/ffmpeg2pass*'): os.remove(fn)
+		#---option for a webm conversion when complete
+		if webm:
+			subprocess.check_call("ffmpeg -i %s -c:v libvpx -crf 10 -b:v 1M -c:a libvorbis %s"%
+				(name+"."+video_suffix,name+".webm"),shell=True,cwd=self.cwd)
 			
 	def martini_secondary_structure(self,itp,style='all',name='protein_subject',back_color=None,mers=1):
 		"""

@@ -24,6 +24,7 @@ def prepare_viewer_scripts(vmdstate):
 	key variables
 		show_trajectory : necessary for loading a video
 	"""
+	print(settings)
 	view = VMDWrap(site=vmdstate.here,gro=vmdstate.trajectory_details['gro'],
 		res=settings.resolution,viewbox=settings.viewbox)
 	cursor_color = settings.get('cursor_color',False)
@@ -110,7 +111,7 @@ def render_video(vmdstate):
 	view = vmdstate.view
 	if settings.view_mode == 'video': 
 		view.render(name=settings.video_name,size=settings.video_size,
-			duration=settings.get('duration',0))
+			duration=settings.get('duration',0),webm=settings.webm)
 	return vmdstate
 
 def view_routine():
