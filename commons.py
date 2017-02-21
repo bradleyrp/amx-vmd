@@ -1,3 +1,8 @@
+
+"""
+This module contains important constants used by VMDMake.
+"""
+
 commons = """
 pbc: package require pbc
 bonder:|
