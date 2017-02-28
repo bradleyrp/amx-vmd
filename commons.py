@@ -136,9 +136,15 @@ coarse bilayer licorice:|
 coarse protein:|
 	{'protein_subject':' or '.join(['name %s'%i for i in ['BB','SC1','SC2','SC3','SC4']]),
 	'smooth':True,'style':'licorice_coarse','color_specific':True}
+coarse protein lines:|
+	{'protein_subject':' or '.join(['name %s'%i for i in ['BB','SC1','SC2','SC3','SC4']]),
+	'smooth':True,'style':'lines','color_specific':True}
 coarse protein backbone:|
 	{'protein_subject':' or '.join(['name %s'%i for i in ['BB']]),
 	'smooth':True,'style':'licorice_coarse','color_specific':True,'goodsell':True}
+coarse protein backbone lines:|
+	{'protein_subject':' or '.join(['name %s'%i for i in ['BB']]),
+	'smooth':True,'style':'lines'}
 """
 
 recipes_collect = """
@@ -146,6 +152,8 @@ video aamd atomistic bilayer protein:['atomistic_bilayer licorice','atomistic_pr
 live aamd atomistic bilayer protein:['atomistic_bilayer lines','atomistic_protein']
 video cgmd bilayer protein:['coarse bilayer licorice','coarse protein']
 video cgmd bilayer protein backbone:['coarse bilayer licorice','coarse protein backbone']
+live cgmd bilayer protein:['coarse bilayer lines','coarse protein']
+live cgmd bilayer protein backbone:['coarse bilayer lines','coarse protein backbone lines']
 video aamd atomistic all waterdots:['atomistic_bilayer licorice','waterdots']
 video aamd generic:['atomistic_bilayer licorice']
 """

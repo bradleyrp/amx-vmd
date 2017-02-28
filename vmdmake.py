@@ -65,14 +65,12 @@ class VMDWrap:
 		"""
 		Use the class like a dictionary for updating substitutions in the commons.
 		"""
-
 		self.__dict__[key] = value
 
 	def do(self,*names):
 		"""
 		Use a set of prescribed code blocks defined in commons.
 		"""
-
 		for name in names:
 			if name not in self.commons: 
 				raise Exception('cannot find item "%s" in the commons/constants'%name)
@@ -166,7 +164,6 @@ class VMDWrap:
 		pipe = kwargs.get('pipe',False)
 		#---text mode if quit on complete
 		text = kwargs.get('text',quit)
-
 
 		#---quit after the script is done
 		if quit: self.script += ['quit']
@@ -345,7 +342,6 @@ class VMDWrap:
 		"""
 		Color a MARTINI protein by secondary structure.
 		"""
-
 		import re
 		#---set the jet colorscale from colorscales.tcl
 		self.do('colorscales')
@@ -355,7 +351,8 @@ class VMDWrap:
 		#---select secondary structure colors
 		coloring = {'C':'gray','H':'red','3':'pink','1':'pink','S':'blue','2':'pink','T':'yellow'}
 		#---! HACKED
-		coloring = {'C':0.5,'H':1.0,'3':1.0,'1':1.0,'S':0.0,'2':1.0,'T':0.5}
+		coloring = {'C':0.25,'H':1.0,'3':1.0,'1':1.0,'S':0.0,'2':1.0,'T':0.55}
+		#coloring = {'C':0.0,'H':1.0,'3':0.0,'1':0.0,'S':0.0,'2':0.0,'T':0.0}
 		#---hard-coded bead numbers generated from lib_helices.CoarseGrainedModel
 		bead_counts = {'ILE':2,'GLN':2,'GLY':1,'PHE':4,'GLU':2,'CYS':2,'HIS':4,'SER':2,
 			'LYS':3,'PRO':2,'HISH':4,'ASN':2,'VAL':2,'THR':2,'ASP':2,'ASP0':2,'LYS0':3,

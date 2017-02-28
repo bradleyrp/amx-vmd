@@ -24,9 +24,9 @@ def prepare_viewer_scripts(vmdstate):
 	key variables
 		show_trajectory : necessary for loading a video
 	"""
-	print(settings)
-	view = VMDWrap(site=vmdstate.here,gro=vmdstate.trajectory_details['gro'],
-		res=settings.resolution,viewbox=settings.viewbox)
+	kwargs = dict(site=vmdstate.here,gro=vmdstate.trajectory_details['gro'],viewbox=settings.viewbox)
+	if settings.get('resolution',None): kwargs['res'] = settings.resolution
+	view = VMDWrap(**kwargs)
 	cursor_color = settings.get('cursor_color',False)
 	if cursor_color: view.set_color_cursor(cursor_color)
 	#---custom variables
@@ -46,7 +46,9 @@ def prepare_viewer_scripts(vmdstate):
 			warnings.simplefilter("ignore")
 			import MDAnalysis
 		uni = MDAnalysis.Universe(vmdstate.trajectory_details['gro'],vmdstate.trajectory_details['xtc'])
-		stepskip = max(int(float(len(uni.trajectory))/settings.max_frames+1),1)
+		max_frames = settings.get('max_frames',None)
+		if not max_frames: stepskip = 1
+		else: stepskip = max(int(float(len(uni.trajectory))/max_frames+1),1)
 		view.__dict__.update(step=stepskip,frames='')
 	view.do('load')
 	if show_trajectory: view.trajectory(target=vmdstate.trajectory_details['xtc'],step=stepskip)
@@ -55,7 +57,7 @@ def prepare_viewer_scripts(vmdstate):
 	if backbone_align_name:
 		view.__dict__['backbonename'] = backbone_align_name
 		view.do('align_backbone')
-	if settings.get('cg_bonds',False) or settings.get('bonder',False):
+	if settings.get('cg_bonds',False):
 		cg_bonds_tcl = os.path.abspath(os.path.expanduser(str(settings.cg_bonds)))
 		if not os.path.isfile(cg_bonds_tcl): 
 			raise Exception("cannot find cg_bonds.tcl at %s"%cg_bonds_tcl+
@@ -63,22 +65,25 @@ def prepare_viewer_scripts(vmdstate):
 		view.__dict__['cgbondspath'] = cg_bonds_tcl
 		#---! need a protocol for GMXDUMP possibly tempfile or alias
 		view.__dict__['gmxdump'] = os.path.abspath(os.path.expanduser(settings.get('gmx_dump','gmxdump')))
-	if settings.get('bonder',False): view.do('bonder')
+		view.do('bonder')
 	view.do(settings.which_view)
 	if settings.get('scale',False): view.command(settings.scale)
-	for select in settings.selections: view.select(**select)
+	for select in settings.get('selections',[]): view.select(**select)
+	recipe_name = nospaces(settings.recipe_collection)
+	if recipe_name not in view.recipes_collect:
+		raise Exception('cannot find recipe "%s"'%recipe_name)
 	for recipe in view.recipes_collect[nospaces(settings.recipe_collection)]: 
 		view.recipe(nospaces(recipe))
 	#---apply special MARTINI protein colors
 	if settings.get('martini_structure_color',False): 
-		raise Exception('under development. needs itp.')
-		if settings.recipe_collection=='video cgmd bilayer protein backbone':
-			martini_style = 'backbone'
-		else: martini_style = 'all'
-		view.martini_secondary_structure(itp=view.itp,
-			style=martini_style,back_color=backbone_color)
-		view.martini_secondary_structure(itp=view.itp,style=martini_style,
-			back_color=settings.backbone_color,mers=settings.get('mers',1))
+		martini_style = 'backbone'
+		#---! previously allowed another option in some cases: martini_style = 'all'
+		view.martini_secondary_structure(itp=settings.itp,
+			style=martini_style,back_color=settings.backbone_color)
+		#---!method for polymers needs to be fixed up a bit
+		if False:
+			view.martini_secondary_structure(itp=settings.itp,style=martini_style,
+				back_color=settings.backbone_color,mers=settings.get('mers',1))
 	#---custom scripts directly from the wordspace
 	if settings.get('custom_script',False):
 		script = settings.custom_script
@@ -126,7 +131,6 @@ def view_routine():
 
 	#---prepare the vmdstate
 	vmdstate = DotDict(**{'status':'started'})
-	#import ipdb;ipdb.set_trace()
 	state_fn = os.path.join(settings.step,'vmdstate.json')
 	#---load the state if it exists
 	if os.path.isfile(state_fn): 

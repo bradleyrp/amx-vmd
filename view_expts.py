@@ -78,7 +78,6 @@ selections:| [{'basic_residues':'protein and (resname HIS or resname ARG or resn
 #---note: SEE lib_vmdmake.py and the vmdmake documentation for more details
 
 #---COARSE-GRAIN VISUALS
-bonder: true
 cg_bonds: @cg_bonds                 # martini code for drawing bonds (also highly useful for long atomistic bonds
 gmx_dump: @martini/bin/gmxdump      # using GMX 5 with cg_bonds.tcl requires a wrapper around `gmx dump`
 martini structure color: false      # martini proteins look best with structure colors (in place of cartoon)
@@ -88,7 +87,7 @@ cursor color: red                   # protein sidechain color
 
 """},
 
-'vmd_original_for_reference':{
+'inspect_martini':{
 #####
 ####
 ###
@@ -97,54 +96,21 @@ cursor color: red                   # protein sidechain color
 'quick':'view_routine()',
 'extensions':[],'tags':[],'imports':['@vmd'],'params':None,
 'settings':"""
-
-step: v02-look
-video name: video
-
-view mode: ['video','live','snapshot'][0]
-
-#---video settings
-max frames: 300
-video size: 30
-duration: 0.0
-
-#---inputs are autodetected
+USAGE NOTE:|
+	currently needs to work on snapshots
+	also we have to wait for state.json to be written, so maybe write it before production starts?
+step: v99-inspect
+view mode: live
 input gro: system.gro
-
-#---resolution
 viewbox: (800,800)
-resolution: (2400,1800)
 which view: xview
-scale: scale by 1.75
-
-#---if Tachyon missing try snapshots
-use snapshot: false
-
-#---explicit bonds via cg_bonds.tcl
-#cg_bonds: ~/libs/cg_bonds.tcl
-#bonder: false
-
-#---special colors for MARTINI proteins
-#itp: s02-protein/Protein_A.itp
-#backbone color: [None,'black'][1]
-#martini structure color: false
-#cursor color: red
-
-#---choose a preset "recipe" from vmdmake
-recipe collection:|[
-	'video aamd atomistic bilayer protein',
-	'live aamd atomistic bilayer protein',
-	'video cgmd bilayer protein',
-	'video cgmd bilayer protein backbone',
-	][0]
-
-#---additional highlights
-selections:|[
-	{'basic_residues':'protein and (resname HIS or resname ARG or resname LYS)',
-	'smooth':True,'style':'licorice','goodsell':True},
-	][:]
-
-backbone align name: "name CA"
+cg_bonds: ~/libs/cg_bonds.tcl
+gmx_dump: @martini/bin/gmxdump
+itp: s02-adhere/Protein.itp
+backbone color: black
+martini structure color: true
+cursor color: red
+recipe collection: live cgmd bilayer protein backbone
 
 """},
 
