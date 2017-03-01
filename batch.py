@@ -116,7 +116,7 @@ def render_video(vmdstate):
 	view = vmdstate.view
 	if settings.view_mode == 'video': 
 		view.render(name=settings.video_name,size=settings.video_size,
-			duration=settings.get('duration',0),webm=settings.webm)
+			duration=settings.get('duration',0),webm=settings.get('webm',False))
 	return vmdstate
 
 def view_routine():

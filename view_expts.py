@@ -114,4 +114,46 @@ recipe collection: live cgmd bilayer protein backbone
 
 """},
 
+'dextran_dev_video':{
+#####
+####
+###
+##
+#
+'quick':"view_routine()",
+'extensions':[],'tags':[],'imports':['@vmd'],'params':None,
+'settings':"""
+
+step: v01-look
+video name: video
+view mode: video
+
+#---video settings
+max frames: 300         # aim for this many frames in the unbroken trajectory
+video size: 30          # size in megabytes (requires ffmpeg 2-pass encoding)
+duration: 0.0           # desired duration (requires ffmpeg)
+
+#---resolution
+viewbox: (800,800)      # pixels in the VMD viewer (must match the resolution proportions)
+resolution: (2400,1800) # snapshot and video resolution
+which view: xview       # camera direction
+scale: scale by 1.75    # zoom factor (may require some tuning)
+
+#---recipes set the aesthetics of the rendering
+recipe collection: video aamd atomistic bilayer protein
+
+#---align the protein
+backbone align name: "resname AGLC"
+
+#---custom selections (see lib_vmdmake for details)
+selections:| [{'basic_residues':'protein and (resname HIS or resname ARG or resname LYS)',
+  'smooth':True,'style':'licorice','goodsell':True},
+  ][1:0]
+#---^^^ customizations turned off if the list is sliced over 1:0"!
+#---note: do not use smooth on some items but not others (induces a non-physical asynchronicity)
+#---note: SEE lib_vmdmake.py and the vmdmake documentation for more details
+
+"""},
+
+
 }
