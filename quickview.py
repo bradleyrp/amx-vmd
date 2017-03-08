@@ -27,7 +27,7 @@ def martiniview(*args,**kwargs):
 		gro = kwargs.get('gro',parse('gro'))
 		tpr = kwargs.get('tpr',parse('tpr'))
 		xtc = kwargs.get('xtc',parse('xtc'))
-	if not all([xtc,gro,tpr]): raise Exception('missing one of gro (%s) tpr (%s)'%(gro,tpr))
+	if not all([gro,tpr]): raise Exception('missing one of gro (%s) tpr (%s)'%(gro,tpr))
 	cmds = ['mol new %s'%gro]
 	if xtc: cmds += ['mol addfile %s'%xtc]
 	cmds += ['source %s'%cg_bonds_fn]
