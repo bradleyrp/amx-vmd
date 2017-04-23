@@ -137,9 +137,19 @@ def view_routine():
 		with open(state_fn) as fp: vmdstate = DotDict(**json.load(fp))
 	if 'here' not in vmdstate: make_sidestep(settings.step)
 	vmdstate.here = os.path.join(settings.step,'')
-
 	try:
-		if not vmdstate.get('already_ran',False): vmdstate = create_unbroken_trajectory(vmdstate)
+		if not vmdstate.get('already_ran',False):
+			#---if the user supplies a custom trajectory then we use that
+			if settings.get('trajectory_details',False): 
+				vmdstate.trajectory_details = settings['trajectory_details']
+				#---paths checked here and should be relative to root.
+				for key,val in vmdstate.trajectory_details.items():
+					if not os.path.isfile(val): 
+						raise Exception('incoming trajectory_details file missing: %s'%val)
+					else: vmdstate.trajectory_details[key] = os.path.abspath(val)
+			else:
+				#---automatically fix PBCs on the last part if the user has not supplied a custom file
+				vmdstate = create_unbroken_trajectory(vmdstate)
 		vmdstate = prepare_viewer_scripts(vmdstate)
 		if not vmdstate.get('already_ran',False): vmdstate = run_vmd(vmdstate)
 		vmdstate = render_video(vmdstate)
