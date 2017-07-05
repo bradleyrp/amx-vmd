@@ -49,6 +49,8 @@ class VMDWrap:
 		#---all kwargs are saved to the dictionary as substitutions
 		self.__dict__.update(**kwargs)
 		self.start_time = time.time()
+		#---incoming resolution overrides the default viewbox specified in commons.py
+		if 'res' in self.__dict__.keys(): self.viewbox = self.res
 		self.viewx,self.viewy = self.viewbox
 
 		#---handle paths where the 'site' is the top level folder

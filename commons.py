@@ -9,6 +9,10 @@ bonder:|
 	source CGBONDSPATH
 	cg_bonds -cutoff BOND_CUTOFF_ANGSTROMS -gmx GMXDUMP -tpr TPR
 load: mol new GRO
+load dynamic:|
+	mol new GRO
+	animate delete beg 0 end 0 skip 0 0
+	mol addfile XTC FRAMES step STEP waitfor all
 ortho:
 	display projection Orthographic
 standard:|
