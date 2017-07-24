@@ -21,7 +21,9 @@ except: print('[WARNING] running vmdmake without acme')
 config = {}
 
 #---if we find an ACME config file we import several useful functions
-if acme_root:
+#---note that we may find an omnicalc config.py when using vmdmake inside omnicalc
+#---...which case is apparent when the acme key is missing in which case we skip the imports for automacs
+if acme_root and config.get('acme',False):
 
 	with open(os.path.join(acme_root,'config.py')) as fp: config = eval(fp.read())
 	#---connect to runner
@@ -43,7 +45,9 @@ if acme_root:
 	vmdmake.expt = batch.expt = expt
 
 #---codes for operation without ACME
-else: from acme_supplement import DotDict,yamlb
+else: 
+	try: from acme_supplement import DotDict,yamlb
+	except: print('[WARNING] no DotDict or yamlb')
 
 #---use a copy of the ACME simplified YaML parser
 vmdmake.DotDict = batch.DotDict = DotDict

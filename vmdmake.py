@@ -16,7 +16,8 @@ class VMDWrap:
 	#---hard-coded vmd colors
 	vmd_colors = dict([(i,ii) for ii,i in enumerate(
 		('blue red gray orange yellow tan silver green white pink cyan purple lime '+
-		'mauve ochre iceblue black').split())])
+		'mauve ochre iceblue black yellow2 yellow3 green2 green3 cyan2 cyan3 blue2 blue3 violet '+
+		'magenta magenta2 red2 red3 orange2 orange3').split())])
 
 	def yamlparse(self,text):
 		"""Try yamlparse (comes from yamlb in acme) first otherwise treat it like python."""
