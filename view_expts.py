@@ -7,7 +7,7 @@
 ##
 #
 'quick':"view_routine()",
-'extensions':[],'tags':[],'imports':['@vmd'],'params':None,
+'extensions':[],'tags':['aamd','tag_?!vmdmake'],'imports':['@vmd'],'params':None,
 'settings':"""
 
 step: v01-look
@@ -48,7 +48,7 @@ selections:| [{'basic_residues':'protein and (resname HIS or resname ARG or resn
 ##
 #
 'quick':'view_routine()',
-'extensions':[],'tags':[],'imports':['@vmd'],'params':None,
+'extensions':[],'tags':['cgmd','tag_?!vmdmake'],'imports':['@vmd'],'params':None,
 'settings':"""
 
 step: v01-look
@@ -94,7 +94,7 @@ cursor color: red                   # protein sidechain color
 ##
 #
 'quick':'view_routine()',
-'extensions':[],'tags':[],'imports':['@vmd'],'params':None,
+'extensions':[],'tags':['cgmd','tag_!?vmdmake'],'imports':['@vmd'],'params':None,
 'settings':"""
 USAGE NOTE:|
 	currently needs to work on snapshots
@@ -121,7 +121,7 @@ recipe collection: live cgmd bilayer protein backbone
 ##
 #
 'quick':"view_routine()",
-'extensions':[],'tags':[],'imports':['@vmd'],'params':None,
+'extensions':[],'tags':['aamd','tag_dev','tag_?!vmdmake'],'imports':['@vmd'],'params':None,
 'settings':"""
 
 step: v01-look
@@ -153,7 +153,22 @@ selections:| [{'basic_residues':'protein and (resname HIS or resname ARG or resn
 #---note: do not use smooth on some items but not others (induces a non-physical asynchronicity)
 #---note: SEE lib_vmdmake.py and the vmdmake documentation for more details
 
-"""},
+DEVNOTES:|
+	vmdmake codes need to be updated
+	script was modified to the following (quick script method needs updated)
+		import os,sys
+		sys.path.insert(0,"./runner")
+		from makeface import import_remote
+		globals().update(**import_remote("inputs/vmd"))
+		import amx
+		batch.state = amx.state
+		batch.settings = amx.settings
+		batch.expt = amx.expt
+		batch.make_sidestep = amx.make_sidestep
+		batch.get_last_frame = amx.get_last_frame
+		batch.get_trajectory = amx.get_trajectory
+		view_routine()
 
+"""},
 
 }
