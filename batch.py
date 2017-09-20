@@ -63,7 +63,13 @@ def prepare_viewer_scripts(vmdstate):
 			raise Exception("cannot find cg_bonds.tcl at %s"%cg_bonds_tcl+
 				' get this file from MARTINI and set the settings variable called "cg_bonds" to that path')
 		view.__dict__['cgbondspath'] = cg_bonds_tcl
-		#---! need a protocol for GMXDUMP possibly tempfile or alias
+		#---for older versions of cg_bonds.tcl we used a bash wrapper around "gmx dump" for compatbility with
+		#---...gromacs 5. a new version of cg_bonds.tcl still requires a method for calling gmx, however without
+		#---...the dump sub-command. since that new version hard-codes /usr/bin/gmx (instead of using the path)
+		#---...we retain the "gmxdump" flag which should point to a wrapper around the gmx command and has been
+		#---...included in @martini/bin/gmx alongside the now-deprecated gmxdump bash wrapper. the new version
+		#---...of cg_bonds.tcl is now included also in @martini/bin. users should set gmx_dump in their 
+		#---...experiments to @martini/bin/gmx to use @martini/bin/cg_bonds.tcl (the new version) as well
 		view.__dict__['gmxdump'] = os.path.abspath(os.path.expanduser(settings.get('gmx_dump','gmxdump')))
 		view.do('bonder')
 	view.do(settings.which_view)
@@ -126,8 +132,12 @@ def view_routine():
 	It is designed to rerender videos without rerendering snapshots if desired.
 	"""
 
-	for key in ['state','settings','expt']:
-		if key not in globals(): raise Exception('%s must be exported to this module'%key)
+	import amx
+	#---manually sending functions from automacs to vmdmake
+	#---previously checked for these in globals
+	for key in ['state','settings','expt',
+		'make_sidestep','get_last_frame','get_trajectory']:
+		globals()[key] = getattr(amx,key)
 
 	#---prepare the vmdstate
 	vmdstate = DotDict(**{'status':'started'})

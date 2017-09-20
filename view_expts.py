@@ -48,8 +48,13 @@ selections:| [{'basic_residues':'protein and (resname HIS or resname ARG or resn
 ##
 #
 'quick':'view_routine()',
-'extensions':[],'tags':['cgmd','tag_?!vmdmake'],'imports':['@vmd'],'params':None,
+'extensions':[],'tags':['cgmd','tested_2017.09.20'],'imports':['@vmd'],'params':None,
 'settings':"""
+
+USAGE NOTES:|
+	this quick script makes a short video of the last gromacs MD part (xtc)
+	it is mainly used for reviewing simulations quickly. use omnicalc for videos for publication
+	when running locally (i.e. no entry in machine_configuration) make sure to load gromacs to draw bonds
 
 step: v01-look
 video name: video
@@ -78,10 +83,10 @@ selections:| [{'basic_residues':'protein and (resname HIS or resname ARG or resn
 #---note: SEE lib_vmdmake.py and the vmdmake documentation for more details
 
 #---COARSE-GRAIN VISUALS
-cg_bonds: @cg_bonds                 # martini code for drawing bonds (also highly useful for long atomistic bonds
-gmx_dump: @martini/bin/gmxdump      # using GMX 5 with cg_bonds.tcl requires a wrapper around `gmx dump`
+cg_bonds: @martini/bin/cg_bonds.tcl # martini code for drawing bonds (also highly useful for long atomistic bonds
+gmx_dump: @martini/bin/gmx          # cg_bonds.tcl in @martini/bin takes gmx not gmxdump with the gmx flag
 martini structure color: false      # martini proteins look best with structure colors (in place of cartoon)
-#itp: s02-protein/Protein_A.itp     # structure color requires an itp
+itp: None                           # structure color requires an itp
 backbone color: [None,'black'][1]   # separate color for the BB beads in licorice
 cursor color: red                   # protein sidechain color
 
@@ -93,20 +98,20 @@ cursor color: red                   # protein sidechain color
 ###
 ##
 #
-'quick':'view_routine()',
-'extensions':[],'tags':['cgmd','tag_!?vmdmake'],'imports':['@vmd'],'params':None,
+'quick':"""view_routine()""",
+'extensions':[],'tags':['cgmd','tested_2017.09.20'],'imports':['@vmd'],'params':None,
 'settings':"""
-USAGE NOTE:|
-	currently needs to work on snapshots
-	also we have to wait for state.json to be written, so maybe write it before production starts?
+USAGE NOTES:|
+	this quick script creates a "live" VMD view of a MARTINI simulation
+	it saves time by setting up VMD to more easily see a CGMD simulation
 step: v99-inspect
 view mode: live
 input gro: system.gro
 viewbox: (800,800)
 which view: xview
-cg_bonds: ~/libs/cg_bonds.tcl
+cg_bonds: @martini/bin/cg_bonds.tcl
 gmx_dump: @martini/bin/gmxdump
-itp: s02-adhere/Protein.itp
+itp: None # autodetect that last-modified itp file
 backbone color: black
 martini structure color: true
 cursor color: red

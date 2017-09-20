@@ -347,8 +347,8 @@ class VMDWrap:
 		"""
 		import re
 		#---set the jet colorscale from colorscales.tcl
-		self.do('colorscales')
-		self.script.append('colorscale_jet')
+		#---! needs added to vmdmake self.do('colorscales')
+		#---! needs added to vmdmake self.script.append('colorscale_jet')
 		#---backbone forces secondary structure coloring
 		if style=='backbone': back_color = None
 		#---select secondary structure colors
@@ -363,7 +363,14 @@ class VMDWrap:
 		aa_codes3 = ['TRP','TYR','PHE','HIS','ARG','LYS','CYS','ASP','GLU',
 			'ILE','LEU','MET','ASN','PRO','HYP','GLN','SER','THR','VAL','ALA','GLY']
 		aa_codes1 = 'WYFHRKCDEILMNPOQSTVAG'
-		assert os.path.isfile(itp),'need an ITP but I cannot find "%s"'%itp
+		#---autodetect the ITP by running a python find command and sorting by mtime
+		if not itp:
+			#---simple way to get the last file
+			try: itp = sorted([os.path.join(rn,fn) for rn,dn,fns in os.walk('.') 
+				for fn in fns if re.match('^.+\.itp$',fn)],key=lambda x:os.path.getmtime(x))[-1]
+			except: raise Exception('failed to autodetect the itp file. try setting that flag in the experiment')
+		if not os.path.isfile(itp):
+			raise Exception('cannot locate ITP %s'%itp)
 		with open(itp) as fp: text = fp.read()
 		regex_ss = '^;\s*(S|s)econdary structure\n;\s*([A-Z0-9]+)\s'
 		ss = re.search('^;\s*(?:S|s)econdary (?:S|s)tructure.*?\n;\s*(.*?)$',text,re.M+re.DOTALL).group(1)
