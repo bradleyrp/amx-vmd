@@ -7,7 +7,7 @@
 ##
 #
 'quick':"view_routine()",
-'extensions':[],'tags':['aamd','tag_?!vmdmake'],'imports':['@vmd'],'params':None,
+'extensions':[],'tags':['aamd'],'imports':['@vmd'],'params':None,
 'settings':"""
 
 step: v01-look
@@ -119,15 +119,20 @@ recipe collection: live cgmd bilayer protein backbone
 
 """},
 
-'dextran_dev_video':{
+'dextran_pentamer_video':{
 #####
 ####
 ###
 ##
 #
 'quick':"view_routine()",
-'extensions':[],'tags':['aamd','tag_dev','tag_?!vmdmake'],'imports':['@vmd'],'params':None,
+'extensions':[],'tags':['aamd','tested_2017.09'],'imports':['@vmd'],'params':None,
 'settings':"""
+
+USAGE NOTES:|
+	not for use with coarse-grained dextran (try vmd_cgmd_bilayer which works fine)
+	designed for a brief visualization of the atomistic pentamer dextran
+	development note: sometimes the pentamer is off-center
 
 step: v01-look
 video name: video
