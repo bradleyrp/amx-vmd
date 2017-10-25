@@ -8,6 +8,7 @@ def martiniview(*args,**kwargs):
 	"""
 	Quickly view a martini structure.
 	!Needs more fine-tuning.
+	!Currently deprecated?
 	"""
 	#---! hardcoded-path
 	cg_bonds_fn = '~/libs/cg_bonds.tcl'
@@ -38,3 +39,55 @@ def martiniview(*args,**kwargs):
 	cmd = 'vmd -e %s'%tf.name
 	print('[STATUS] running "%s"'%cmd)
 	os.system(cmd)
+
+def lammps_view_basic():
+	"""
+	Mimics view_routine for lammps.
+	""" 
+
+	import amx
+	#---manually sending functions from automacs to vmdmake
+	#---previously checked for these in globals
+	for key in ['state','settings','expt',
+		'make_sidestep','gmx_get_last_frame','gmx_get_trajectory']:
+		globals()[key] = getattr(amx,key)
+
+	#---prepare the vmdstate
+	vmdstate = DotDict(**{'status':'started'})
+	state_fn = os.path.join(settings.step,'vmdstate.json')
+	#---load the state if it exists
+	if os.path.isfile(state_fn): 
+		with open(state_fn) as fp: vmdstate = DotDict(**json.load(fp))
+	if 'here' not in vmdstate: make_sidestep(settings.step)
+	vmdstate.here = os.path.join(settings.step,'')
+	try:
+		if not vmdstate.get('already_ran',False):
+			#---if the user supplies a custom trajectory then we use that
+			if settings.get('trajectory_details',False): 
+				vmdstate.trajectory_details = settings['trajectory_details']
+				#---paths checked here and should be relative to root.
+				for key,val in vmdstate.trajectory_details.items():
+					if not os.path.isfile(val): 
+						raise Exception('incoming trajectory_details file missing: %s'%val)
+					else: vmdstate.trajectory_details[key] = os.path.abspath(val)
+			else:
+				#---automatically fix PBCs on the last part if the user has not supplied a custom file
+				vmdstate = create_unbroken_trajectory(vmdstate)
+		vmdstate = prepare_viewer_scripts(vmdstate)
+		if not vmdstate.get('already_ran',False): vmdstate = run_vmd(vmdstate)
+		vmdstate = render_video(vmdstate)
+	#---on failure or interrupt we save the state
+	except (Exception,KeyboardInterrupt) as e: 
+		print('[VMD] exception: %s'%str(e))
+		vmdstate['status'] = 'error'
+		#---! tracebackstolen from acme.stopper
+		import sys,traceback
+		exc_type,exc_obj,exc_tb = sys.exc_info()
+		#---write the traceback
+		tag = '[TRACEBACK] '
+		tracetext = tag+re.sub(r'\n','\n%s'%tag,str(''.join(traceback.format_tb(exc_tb)).strip()))
+		print(tracetext)
+	print('[VMD] writing state to %s'%state_fn)
+	with open(state_fn,'w') as fp: 
+		if 'view' in vmdstate: vmdstate.pop('view')
+		fp.write(json.dumps(vmdstate))

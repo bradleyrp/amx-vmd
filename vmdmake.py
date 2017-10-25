@@ -213,8 +213,10 @@ class VMDWrap:
 		#---generic header for making a video
 		video_lines = [
 			'set num [molinfo top get numframes]',
+			'puts "STATUS number of frames is $num"',
 			'for {set i 0} {$i < $num} {incr i} {',
 			'animate goto $i',
+			'puts "STATUS advanced to frame $i/$num"',
 			'set lag [expr $i-15]',
 			'set lead [expr $i]']
 		video_lines.extend(trace_commands)

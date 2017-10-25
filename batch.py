@@ -15,8 +15,8 @@ def create_unbroken_trajectory(vmdstate):
 	"""
 	#---note that typical use of get_last_frame is for chaining/continuation
 	#---here we assume that the last state is the one we want, and it still resides in state.json
-	get_last_frame(dest=vmdstate.here,source=state.here)
-	vmdstate.trajectory_details = get_trajectory(dest=vmdstate.here)
+	gmx_get_last_frame(dest=vmdstate.here,source=state.here)
+	vmdstate.trajectory_details = gmx_get_trajectory(dest=vmdstate.here)
 	return vmdstate
 
 def prepare_viewer_scripts(vmdstate):
@@ -64,12 +64,13 @@ def prepare_viewer_scripts(vmdstate):
 				' get this file from MARTINI and set the settings variable called "cg_bonds" to that path')
 		view.__dict__['cgbondspath'] = cg_bonds_tcl
 		#---for older versions of cg_bonds.tcl we used a bash wrapper around "gmx dump" for compatbility with
-		#---...gromacs 5. a new version of cg_bonds.tcl still requires a method for calling gmx, however without
-		#---...the dump sub-command. since that new version hard-codes /usr/bin/gmx (instead of using the path)
-		#---...we retain the "gmxdump" flag which should point to a wrapper around the gmx command and has been
-		#---...included in @martini/bin/gmx alongside the now-deprecated gmxdump bash wrapper. the new version
-		#---...of cg_bonds.tcl is now included also in @martini/bin. users should set gmx_dump in their 
-		#---...experiments to @martini/bin/gmx to use @martini/bin/cg_bonds.tcl (the new version) as well
+		#---...gromacs 5. a new version of cg_bonds.tcl still requires a method for calling gmx, however 
+		#---...without the dump sub-command. since that new version hard-codes /usr/bin/gmx (instead of using 
+		#---...the path) we retain the "gmxdump" flag which should point to a wrapper around the gmx command 
+		#---...and has been included in @martini/bin/gmx alongside the now-deprecated gmxdump bash wrapper. 
+		#---...the new version of cg_bonds.tcl is now included also in @martini/bin. users should set 
+		#---...gmx_dump in their experiments to @martini/bin/gmx to use @martini/bin/cg_bonds.tcl (the new 
+		#---... version) as well
 		view.__dict__['gmxdump'] = os.path.abspath(os.path.expanduser(settings.get('gmx_dump','gmxdump')))
 		view.do('bonder')
 	view.do(settings.which_view)
@@ -107,6 +108,45 @@ def prepare_viewer_scripts(vmdstate):
 	vmdstate.view = view
 	return vmdstate
 
+def prepare_viewer_scripts_lammps(vmdstate):
+	"""
+	...
+	"""
+	#---the state should hold the last step
+	here_before = state.here
+	#---! removed gro and viewbox from the othe prepare_viewer_scripts
+	kwargs = dict(site=vmdstate.here)
+	if settings.get('resolution',None): kwargs['res'] = settings.resolution
+	view = VMDWrap(**kwargs)
+	trajectory_details = {
+		'psf':os.path.abspath(os.path.join(vmdstate.here,"traj.psf")),
+		'dcd':os.path.abspath(os.path.join(state.here,"traj.dcd"))}
+	view.command('package require topotools')
+	view.command("topo readlammpsdata %s molecular"%os.path.abspath(os.path.join(state.here,'traj.data')))
+	view.command("animate write psf %s"%trajectory_details['psf'])
+	view.command("mol load psf %s"%trajectory_details['psf'])
+	view.command("mol addfile %s waitfor all"%trajectory_details['dcd'])
+	view.command('display resize 500 500')
+	view.command('mol delrep 0 top')
+	#---stage 2: aesthetics
+	view.do('standard')
+	view.select(**{'everything':'all','smooth':True,'style':'VDW 0.300000 12.000000','goodsell':True})
+	view.do('xview')
+	view.command('rotate x by 45')
+	view.command('rotate y by 45')
+	#---stage 3: make snapshots if this is a video
+	snap_dn_abs = 'snapshots'
+	if settings.view_mode == 'video' and not settings.get('video_snaps',False): 
+		settings.video_snaps = view.video(dn=snap_dn_abs,snapshot=settings.get('use_snapshot',False))
+	elif settings.view_mode == 'video': 
+		view.video_dn,view.snapshot = settings.video_snaps,settings.get('use_snapshot',False)
+	#---! what is this used for?
+	text_mode = settings.view_mode in ['video','snapshot']
+	#---finished
+	vmdstate.view = view
+	#---! why is vmdstate not edited in-place?
+	return vmdstate
+
 def run_vmd(vmdstate):
 	"""
 	"""
@@ -121,7 +161,8 @@ def render_video(vmdstate):
 	"""
 	view = vmdstate.view
 	if settings.view_mode == 'video': 
-		view.render(name=settings.video_name,size=settings.video_size,
+		#---! need a size or duration!
+		view.render(name=settings.video_name,size=settings.get('video_size',None),
 			duration=settings.get('duration',0),webm=settings.get('webm',False))
 	return vmdstate
 
@@ -136,7 +177,7 @@ def view_routine():
 	#---manually sending functions from automacs to vmdmake
 	#---previously checked for these in globals
 	for key in ['state','settings','expt',
-		'make_sidestep','get_last_frame','get_trajectory']:
+		'make_sidestep','gmx_get_last_frame','gmx_get_trajectory']:
 		globals()[key] = getattr(amx,key)
 
 	#---prepare the vmdstate
@@ -159,8 +200,10 @@ def view_routine():
 					else: vmdstate.trajectory_details[key] = os.path.abspath(val)
 			else:
 				#---automatically fix PBCs on the last part if the user has not supplied a custom file
-				vmdstate = create_unbroken_trajectory(vmdstate)
-		vmdstate = prepare_viewer_scripts(vmdstate)
+				if not settings.get('is_lammps',False):
+					vmdstate = create_unbroken_trajectory(vmdstate)
+		if settings.get('is_lammps',False): vmdstate = prepare_viewer_scripts_lammps(vmdstate)
+		else: vmdstate = prepare_viewer_scripts(vmdstate)
 		if not vmdstate.get('already_ran',False): vmdstate = run_vmd(vmdstate)
 		vmdstate = render_video(vmdstate)
 	#---on failure or interrupt we save the state

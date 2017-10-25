@@ -6,8 +6,9 @@
 ###
 ##
 #
+'tags':['aamd','tested_2017.10.18.1745_dev'],
 'quick':"view_routine()",
-'extensions':[],'tags':['aamd'],'imports':['@vmd'],'params':None,
+'extensions':[],'imports':['@vmd'],'params':None,
 'settings':"""
 
 step: v01-look
@@ -126,7 +127,8 @@ recipe collection: live cgmd bilayer protein backbone
 ##
 #
 'quick':"view_routine()",
-'extensions':[],'tags':['aamd','tested_2017.09'],'imports':['@vmd'],'params':None,
+'extensions':[],'tags':['aamd','tested_2017.09.14'],
+'imports':['@vmd'],'params':None,
 'settings':"""
 
 USAGE NOTES:|
