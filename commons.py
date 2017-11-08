@@ -7,7 +7,7 @@ commons = """
 pbc: package require pbc
 bonder:|
 	source CGBONDSPATH
-	cg_bonds -cutoff BOND_CUTOFF_ANGSTROMS -gmx GMXDUMP -tpr TPR
+	cg_bonds -cutoff BOND_CUTOFF_ANGSTROMS -gmx gmx -tpr TPR
 load: mol new GRO
 load dynamic:|
 	mol new GRO
