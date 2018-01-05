@@ -89,6 +89,7 @@ goodsell: mol modmaterial REP top Goodsell
 hide: mol showrep top REP 0
 color_specific: mol modcolor REP top ColorID $color_cursor
 glass: mol modmaterial REP top Diffuse
+diffuse: mol modmaterial REP top Diffuse
 xy:|
 	mol showperiodic top REP x
 	mol numperiodic top REP 1

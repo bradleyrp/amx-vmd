@@ -95,7 +95,6 @@ class VMDWrap:
 		"""
 		Create a new selection with string substitutions.
 		"""
-
 		style = kwargs.pop('style') if 'style' in kwargs else None
 		extras = []
 		for key in list(kwargs.keys()):
@@ -128,8 +127,9 @@ class VMDWrap:
 		The $color_cursor variable in tcl is set to black (16) by the standard package but can be changed
 		to use coloring by a particular ColorID, on the fly.
 		"""
-
-		self.script.append('set color_cursor %d'%self.vmd_colors[color])
+		color = {'grey':'gray'}.get(color,color)
+		if color in self.vmd_colors: self.script.append('set color_cursor %d'%self.vmd_colors[color])
+		else: self.script.append('set color_cursor %s'%color)
 
 	def command(self,text): 
 		"""
