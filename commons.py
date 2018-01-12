@@ -107,7 +107,7 @@ pbcz:|
 """
 
 defaults = """
-res: (1000,1000)
+resolution: (1000,1000)
 viewbox: (800,800)
 backcolor: white
 bond_cutoff_angstroms: 20

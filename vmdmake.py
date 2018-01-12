@@ -51,7 +51,9 @@ class VMDWrap:
 		self.__dict__.update(**kwargs)
 		self.start_time = time.time()
 		#---incoming resolution overrides the default viewbox specified in commons.py
-		if 'res' in self.__dict__.keys(): self.viewbox = self.res
+		if 'res' in self.__dict__.keys(): 
+			self.res = tuple(self.res)
+			self.viewbox = self.res
 		self.viewx,self.viewy = self.viewbox
 
 		#---handle paths where the 'site' is the top level folder
@@ -306,7 +308,9 @@ class VMDWrap:
 		nframes = float(len(glob.glob(os.path.join(self.cwd,self.video_dn,'*.png'))))
 		frate = 24.0
 		if not size: bitrate = None 
-		elif duration==0.0: bitrate = float(size)*8192/(nframes/frate)
+		elif duration==0.0: 
+			try: bitrate = float(size)*8192/(float(nframes)/frate)
+			except: raise Exception('invalid bitrate: size=%s, nframes=%s, frate=%s'%(size,nframes,frate))
 		#---duration overrides rates
 		else: 
 			bitrate = float(size)*8192/(float(duration))
